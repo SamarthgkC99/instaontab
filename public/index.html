@@ -3,120 +3,90 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Proxy Browser – for old devices</title>
+  <title>Instagram Proxy</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      font-family: system-ui, sans-serif;
       margin: 0;
       padding: 0;
-      background: #e9ecef;
+      background: #fafafa;
     }
     #toolbar {
       position: sticky;
       top: 0;
-      background: #ffffff;
-      padding: 12px;
-      border-bottom: 1px solid #ced4da;
+      background: #fff;
+      padding: 10px;
+      border-bottom: 1px solid #dbdbdb;
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       z-index: 10;
     }
     #urlInput {
       flex: 1;
-      padding: 10px 12px;
-      font-size: 16px;
-      border: 1px solid #ced4da;
-      border-radius: 8px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    #urlInput:focus {
-      border-color: #0d6efd;
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #dbdbdb;
+      border-radius: 4px;
     }
     button {
-      background: #0d6efd;
+      background: #0095f6;
       color: white;
       border: none;
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 8px;
+      padding: 8px 16px;
+      border-radius: 4px;
       cursor: pointer;
-      transition: background 0.2s;
-    }
-    button:hover {
-      background: #0b5ed7;
     }
     #frameContainer {
-      margin: 0;
-      padding: 0;
       height: calc(100vh - 60px);
-      background: white;
     }
     iframe {
       width: 100%;
       height: 100%;
       border: none;
-      background: white;
     }
-    .error {
-      color: #dc3545;
-      padding: 20px;
+    .info {
       text-align: center;
-      font-family: monospace;
-    }
-    @media (max-width: 600px) {
-      #toolbar {
-        padding: 8px;
-      }
-      button {
-        padding: 8px 16px;
-      }
+      padding: 20px;
+      color: #8e8e8e;
     }
   </style>
 </head>
 <body>
   <div id="toolbar">
-    <input type="text" id="urlInput" placeholder="Enter URL (e.g., https://www.instagram.com/explore/tags/cats/)" value="https://www.instagram.com/">
-    <button id="loadBtn">Load</button>
+    <input type="text" id="urlInput" placeholder="Instagram URL (e.g., /proxy/https://www.instagram.com/)" value="/proxy/https://www.instagram.com/">
+    <button id="goBtn">Go</button>
+    <button id="homeBtn">Home</button>
   </div>
   <div id="frameContainer">
-    <iframe id="contentFrame" srcdoc="<div style='font-family:sans-serif; text-align:center; margin-top:50px;'>Enter a URL and click Load.<br><br>Tip: Try <strong>https://www.instagram.com/p/XXXX/embed/</strong> for posts.</div>"></iframe>
+    <iframe id="proxyFrame" src="/proxy/https://www.instagram.com/"></iframe>
   </div>
 
   <script>
     const urlInput = document.getElementById('urlInput');
-    const loadBtn = document.getElementById('loadBtn');
-    const contentFrame = document.getElementById('contentFrame');
+    const goBtn = document.getElementById('goBtn');
+    const homeBtn = document.getElementById('homeBtn');
+    const proxyFrame = document.getElementById('proxyFrame');
 
-    async function loadUrl() {
-      let targetUrl = urlInput.value.trim();
-      if (!targetUrl) return;
-      
-      // Add https:// if missing
-      if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
-        targetUrl = 'https://' + targetUrl;
+    function loadUrl(url) {
+      if (!url.startsWith('/proxy/')) {
+        // If user forgot, add proxy prefix
+        if (!url.startsWith('http')) url = 'https://' + url;
+        url = '/proxy/' + url.replace(/^https?:\/\//, '');
       }
-      
-      const proxyUrl = `/fetch?url=${encodeURIComponent(targetUrl)}`;
-      
-      try {
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const html = await response.text();
-        contentFrame.srcdoc = html;
-      } catch (err) {
-        contentFrame.srcdoc = `<div class="error">❌ Failed to load ${targetUrl}<br>${err.message}</div>`;
-      }
+      proxyFrame.src = url;
     }
 
-    loadBtn.addEventListener('click', loadUrl);
+    goBtn.addEventListener('click', () => {
+      loadUrl(urlInput.value);
+    });
+    homeBtn.addEventListener('click', () => {
+      proxyFrame.src = '/proxy/https://www.instagram.com/';
+      urlInput.value = '/proxy/https://www.instagram.com/';
+    });
+    // Enter key
     urlInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') loadUrl();
+      if (e.key === 'Enter') loadUrl(urlInput.value);
     });
   </script>
 </body>
